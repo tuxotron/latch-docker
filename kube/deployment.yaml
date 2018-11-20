@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: latch-poc-deployment
+  labels:
+    app: latch-poc-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: latch-poc-deployment
+  template:
+    metadata:
+      labels:
+        app: latch-poc-deployment
+    spec:
+      containers:
+      - name: latch-master
+        image: tuxotron/latch-master
+        volumeMounts:
+        - name: latchvol
+          mountPath: "/usr/share/latch/"
+          readOnly: false
+        env:
+        - name: REFRESCO
+          value: "2"
+        - name: LATCH_APP_ID
+          valueFrom:
+            secretKeyRef:
+              name: latch-secret
+              key: app_id
+        - name: LATCH_ACCOUNT_ID
+          valueFrom:
+            secretKeyRef:
+              name: latch-secret
+              key: account_id
+        - name: LATCH_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: latch-secret
+              key: key
+
+      - name: latch-servicio-go
+        image: tuxotron/latch-servicio-go
+        ports:
+        - containerPort: 8081
+        volumeMounts:
+        - name: latchvol
+          mountPath: "/usr/share/latch/"
+          readOnly: true
+
+      - name: latch-servicio-java
+        image: tuxotron/latch-servicio-java
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: latchvol
+          mountPath: "/usr/share/latch/"
+          readOnly: true
+
+      volumes:
+      - name: latchvol
+        emptyDir: {}

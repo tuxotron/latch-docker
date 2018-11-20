@@ -1,0 +1,40 @@
+version: '3.2'
+services:
+  latch-master:
+    build: latch-container
+    container_name: latch-master
+    environment:
+      - REFRESCO=2
+      - LATCH_APP_ID
+      - LATCH_SECRET_KEY
+      - LATCH_ACCOUNT_ID
+    volumes:
+      - type: volume
+        source: latchvol
+        target: /usr/share/latch/
+  servicio-go:
+    build: latch-go
+    container_name: servicio-go
+    depends_on: 
+      - latch-master
+    ports:
+      - "8081:8081"
+    volumes:
+      - type: volume
+        source: latchvol
+        target: /usr/share/latch/
+        read_only: true
+  servicio-java:
+    build: latch-java
+    container_name: servicio-java
+    depends_on: 
+      - latch-master
+    ports:
+      - "8080:8080"
+    volumes:
+      - type: volume
+        source: latchvol
+        target: /usr/share/latch/
+        read_only: true
+volumes:
+  latchvol:
